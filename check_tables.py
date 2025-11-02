@@ -3,8 +3,8 @@ import psycopg2
 from itertools import zip_longest
 from pandas.testing import assert_frame_equal
 
-TXT_FOLDER_PATH = "./Lab2-ExpectedResults"
-SOLUTION_FOLDER_PATH = "./sqls"
+TXT_FOLDER_PATH = ""
+SOLUTION_FOLDER_PATH = ""
 
 def normalize_numeric_cols(df):
     for col in df.columns:
@@ -39,21 +39,17 @@ for task in tasks_to_run:
     print(f"Задача {task}  (сравниваю {task}.txt ↔ {task}.sql)")
     print(f"{'='*60}")
     
-    # --- TXT: читаем ожидаемый результат ---
     file_path = f"{TXT_FOLDER_PATH}/{task}.txt"
     df_txt = pd.read_csv(file_path, sep="|", engine="python", skipinitialspace=True, dtype=str)
     df_txt = df_txt.dropna(axis=1, how="all")
     df_txt = df_txt.apply(lambda c: c.str.strip())
-    # иногда первая строка может быть пустым эхо заголовков — удалим без ошибки
     df_txt = df_txt.drop(0, errors="ignore")
     first_col = df_txt.columns[0]
     df_txt = df_txt[~df_txt[first_col].str.match(r"^\(\d+\s+rows\)$", na=False)]
     df_txt = df_txt.reset_index(drop=True)
 
-    # нормализуем заголовки TXT
     df_txt.columns = [c.strip() for c in df_txt.columns]
 
-    # --- SQL: выполняем соответствующий запрос ---
     conn = psycopg2.connect(
         host="", port=5432, dbname="", user="", password=""
     )
@@ -64,14 +60,11 @@ for task in tasks_to_run:
     conn.close()
     df_sql = df_sql.reset_index(drop=True)
 
-    # нормализуем заголовки SQL
     df_sql.columns = [c.strip() for c in df_sql.columns]
 
-    # Нормализация числовых значений (не трогаем заголовки)
     df_txt = normalize_numeric_cols(df_txt.copy())
     df_sql = normalize_numeric_cols(df_sql.copy())
 
-    # 1) ЯВНАЯ ПРОВЕРКА КОЛОНОК И ИХ ПОРЯДКА
     txt_cols = list(df_txt.columns)
     sql_cols = list(df_sql.columns)
 
@@ -86,18 +79,15 @@ for task in tasks_to_run:
             print("Нет в SQL:", missing_in_sql)
         if missing_in_txt:
             print("Нет в TXT:", missing_in_txt)
-        # Колонки не совпали — дальше строки сравнивать бессмысленно
         continue
     else:
         print("✅ Колонки совпадают по названиям и порядку.")
 
-    # 2) СРАВНЕНИЕ РАЗМЕРОВ
     if df_txt.shape != df_sql.shape:
         print("Разный размер таблиц")
         print(f"txt:  {df_txt.shape}, sql: {df_sql.shape}")
         continue
 
-    # 3) СРАВНЕНИЕ ЗНАЧЕНИЙ (строго, учитывая порядок)
     try:
         assert_frame_equal(df_txt, df_sql, check_dtype=False, check_like=False)
         print("Полное совпадение: и порядок, и значения.")
