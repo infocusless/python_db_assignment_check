@@ -81,7 +81,7 @@ for task in tasks_to_run:
             print("Нет в TXT:", missing_in_txt)
         continue
     else:
-        print("✅ Колонки совпадают по названиям и порядку.")
+        print("Колонки совпадают по названиям и порядку.")
 
     if df_txt.shape != df_sql.shape:
         print("Разный размер таблиц")
@@ -96,7 +96,7 @@ for task in tasks_to_run:
         bad_idx = list(pd.Index(range(len(df_txt)))[neq_mask])
 
         if len(bad_idx) == 0:
-            print("✅ Таблицы совпадают по значениям (различия только технические).")
+            print("Таблицы совпадают по значениям (различия только технические).")
         else:
             print("Таблицы различаются (учитывая порядок).")
             print(f"Первых 10 несовпадений (из {len(bad_idx)}):")
