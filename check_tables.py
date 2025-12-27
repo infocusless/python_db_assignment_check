@@ -69,7 +69,7 @@ for task in tasks_to_run:
     sql_cols = list(df_sql.columns)
 
     if txt_cols != sql_cols:
-        print("❌ Колонки отличаются по названиям и/или порядку.")
+        print("Колонки отличаются по названиям и/или порядку.")
         print("Порядок колонок (TXT vs SQL):")
         for i, (a, b) in enumerate(zip_longest(txt_cols, sql_cols, fillvalue="—")):
             print(f"{i:>2}: {a}  |  {b}")
